@@ -21,7 +21,7 @@ button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-we
 
 #cartToggle{ position:fixed; bottom:20px; right:20px; background:#ffd700; color:#000; padding:12px 16px; border-radius:50px; font-weight:bold; cursor:pointer; z-index:999; }
 
-@media(min-width:768px){ .menu-section{width:60%} #cart{width:40%;right:0} #cartToggle{display:none} } </style>
+@media(min-width:768px){ .menu-section{width:60%} #cart{width:40%} #cartToggle{display:none} } #cart{width:40%;right:0} #cartToggle{display:none} } </style>
 
 </head>
 <body>
@@ -103,15 +103,25 @@ function updateCart(){
 let c=document.getElementById("cartItems");
 c.innerHTML="";
 let total=0;
-Object.values(cart).forEach(item=>{
+Object.entries(cart).forEach(([id,item])=>{
 let amount=item.qty*item.price;
 total+=amount;
 let div=document.createElement("div");
 div.className="cart-item";
-div.innerHTML=`${item.name} x${item.qty} <span>₹${amount}</span>`;
+div.innerHTML=`${item.name} x${item.qty} <span>₹${amount}</span>
+<button onclick="removeItem('${id}')" style="background:#ff4d4d;color:#fff;margin-left:10px">❌</button>`;
 c.appendChild(div);
 });
 document.getElementById("total").innerText=total;
+}
+
+function removeItem(id){
+if(cart[id]){
+cart[id].qty=0;
+delete cart[id];
+document.getElementById(`qty-${id}`).innerText=0;
+updateCart();
+}
 }
 
 function toggleCart(){
