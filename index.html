@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,46 +8,67 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 <style>
 body{margin:0;font-family:Poppins;background:#0f0f0f;color:#fff}
-header{padding:15px;text-align:center;font-size:22px;font-weight:700;background:linear-gradient(90deg,#111,#222)}.layout{display:flex} .menu-section{width:100%;padding:15px}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#111}
+.menu-section{width:100%;padding:15px}
+.category{margin-bottom:20px}
+.category h2{color:#ffd700;border-left:5px solid #ffd700;padding-left:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item{display:flex;justify-content:space-between;align-items:center;background:#1c1c1c;padding:10px;border-radius:10px}
+button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer}
+.qty-box{display:flex;gap:5px;align-items:center}
 
-.category{margin-bottom:20px} .category h2{color:#ffd700;border-left:5px solid #ffd700;padding-left:10px} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px} .item{display:flex;justify-content:space-between;align-items:center;background:#1c1c1c;padding:10px;border-radius:10px}
+#cart{
+position:fixed;
+right:-100%;
+top:0;
+width:85%;
+height:100%;
+background:#181818;
+padding:20px;
+transition:.3s;
+overflow:auto;
+z-index:1000;
+}
+#cart.active{right:0}
 
-button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer} .qty-box{display:flex;gap:5px;align-items:center}
+.cart-header{display:flex;justify-content:space-between}
+.close-btn{background:#ff4d4d;color:#fff}
+.cart-item{display:flex;justify-content:space-between;margin:8px 0}
 
-/* CART OVERLAY */ #cart{ position:fixed; right:-100%; top:0; width:85%; height:100%; background:#181818; padding:20px; transition:.3s; overflow:auto; z-index:1000; } #cart.active{right:0}
-
-/* ensure closed by default */ #cart:not(.active){right:-100%}
-
-.cart-header{display:flex;justify-content:space-between;align-items:center} .close-btn{background:#ff4d4d;color:#fff;padding:5px 10px}
-
-.cart-item{display:flex;justify-content:space-between;margin:8px 0} .cart-actions{margin-top:15px;display:flex;gap:10px}
-
-#cartToggle{ position:fixed; bottom:20px; right:20px; background:#ffd700; color:#000; padding:12px 16px; border-radius:50px; font-weight:bold; cursor:pointer; z-index:999; }
-
-@media(min-width:768px){ .menu-section{width:60%} /* Desktop: cart fixed on right and always visible / #cart{ width:40%; right:0 !important; / override closed state / } / Hide floating toggle on desktop / #cartToggle{display:none} } #cart{width:40%} / keep cart hidden by default but allow toggle */ #cartToggle{display:block} } #cart{width:40%} #cartToggle{display:none} } #cart{width:40%;right:0} #cartToggle{display:none} } </style>
-
+@media(min-width:768px){
+.menu-section{width:60%}
+#cart{width:40%;right:0}
+}
+</style>
 </head>
 <body>
-<header style="display:flex;justify-content:space-between;align-items:center;padding:15px 20px">
+<header>
 <span>#7 Restaurant</span>
-<button id="topCartBtn" onclick="toggleCart()" style="background:#ffd700;color:#000;padding:6px 12px;border-radius:20px;font-weight:600">Cart 🛒</button>
-</header><div class="layout">
+<button onclick="toggleCart()">Cart 🛒</button>
+</header>
+
 <div class="menu-section" id="menu"></div>
-</div><div id="cartToggle" onclick="toggleCart()">Cart 🛒</div><div id="cart">
+
+<div id="cart">
 <div class="cart-header">
 <h2>Your Cart</h2>
 <button class="close-btn" onclick="closeCart()">Close ✖</button>
-</div><div id="cartItems"></div>
-<h3>Total: ₹<span id="total">0</span></h3><div class="cart-actions">
+</div>
+<div id="cartItems"></div>
+<h3>Total: ₹<span id="total">0</span></h3>
+
 <button onclick="openForm()">Pay</button>
 <button class="close-btn" onclick="clearCart()">Cancel</button>
-</div><!-- CUSTOMER FORM --><div id="orderForm" style="display:none;margin-top:15px">
-<input id="custName" placeholder="Your Name" style="width:100%;margin-bottom:8px;padding:8px;border-radius:5px;border:none">
-<input id="custPhone" placeholder="Phone Number" style="width:100%;margin-bottom:8px;padding:8px;border-radius:5px;border:none">
-<textarea id="custAddress" placeholder="Address" style="width:100%;margin-bottom:8px;padding:8px;border-radius:5px;border:none"></textarea>
-<button onclick="payNow()" style="width:100%">Confirm & Pay</button>
+
+<div id="orderForm" style="display:none;margin-top:10px">
+<input id="custName" placeholder="Name" style="width:100%;margin-bottom:6px">
+<input id="custPhone" placeholder="Phone" style="width:100%;margin-bottom:6px">
+<textarea id="custAddress" placeholder="Address" style="width:100%;margin-bottom:6px"></textarea>
+<button onclick="payNow()">Confirm & Pay</button>
 </div>
-</div><script>
+</div>
+
+<script>
 const OWNER_WHATSAPP="919021268038";
 
 const menu=[
@@ -113,56 +135,33 @@ let amount=item.qty*item.price;
 total+=amount;
 let div=document.createElement("div");
 div.className="cart-item";
-div.innerHTML=`${item.name} x${item.qty} <span>₹${amount}</span>
-<button onclick="removeItem('${id}')" style="background:#ff4d4d;color:#fff;margin-left:10px">❌</button>`;
+div.innerHTML=`${item.name} x${item.qty} ₹${amount} <button onclick="removeItem('${id}')">❌</button>`;
 c.appendChild(div);
 });
 document.getElementById("total").innerText=total;
 }
 
 function removeItem(id){
-if(cart[id]){
-cart[id].qty=0;
 delete cart[id];
 document.getElementById(`qty-${id}`).innerText=0;
 updateCart();
 }
-}
 
-function toggleCart(){
-document.getElementById("cart").classList.toggle("active");
-}
+function toggleCart(){document.getElementById("cart").classList.toggle("active");}
+function closeCart(){document.getElementById("cart").classList.remove("active");}
 
-function closeCart(){
-document.getElementById("cart").classList.remove("active");
-}
+function clearCart(){cart={};document.querySelectorAll('[id^="qty-"]').forEach(el=>el.innerText='0');updateCart();closeCart();}
 
-function clearCart(){
-cart={};
-document.querySelectorAll('[id^="qty-"]').forEach(el=>el.innerText='0');
-updateCart();
-closeCart();
-}
+function openForm(){if(Object.keys(cart).length===0){alert("Cart empty");return;}document.getElementById("orderForm").style.display="block";}
 
-function generateMsg(paymentId){
+function generateMsg(id){
 let name=document.getElementById("custName").value;
 let phone=document.getElementById("custPhone").value;
 let address=document.getElementById("custAddress").value;
-
-let msg="New Order:%0A";
-msg+=`Name: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0A`;
-
-Object.values(cart).forEach(i=>{
-msg+=`${i.name} x${i.qty} = ₹${i.qty*i.price}%0A`;
-});
-msg+=`Total: ₹${document.getElementById("total").innerText}%0A`;
-msg+=`Payment ID: ${paymentId}`;
+let msg=`Order:%0AName:${name}%0APhone:${phone}%0AAddress:${address}%0A`;
+Object.values(cart).forEach(i=>{msg+=`${i.name} x${i.qty}%0A`});
+msg+=`Total:₹${document.getElementById("total").innerText}%0AID:${id}`;
 return msg;
-}
-
-function openForm(){
-if(Object.keys(cart).length===0){alert("Cart empty");return;}
-document.getElementById("orderForm").style.display="block";
 }
 
 function payNow(){
@@ -170,40 +169,27 @@ let name=document.getElementById("custName").value.trim();
 let phone=document.getElementById("custPhone").value.trim();
 let address=document.getElementById("custAddress").value.trim();
 
-// VALIDATION
-if(name===""){
-alert("Please enter your name");
-return;
-}
-
-if(!/^[0-9]{10}$/.test(phone)){
-alert("Enter valid 10-digit phone number");
-return;
-}
-
-if(address.length<5){
-alert("Please enter full address");
-return;
-}
+if(name===""){alert("Enter name");return;}
+if(!/^[0-9]{10}$/.test(phone)){alert("Invalid phone");return;}
+if(address.length<5){alert("Enter address");return;}
 
 let total=document.getElementById("total").innerText;
-if(total==0){alert("Cart empty");return;}
 
 var options={
 key:"rzp_test_SSfbjt7z6btSQf",
 amount:total*100,
 currency:"INR",
-name:"#7 Restaurant",
 handler:function(res){
 alert("Payment Success");
-window.open(`https://wa.me/${OWNER_WHATSAPP}?text=${generateMsg(res.razorpay_payment_id)}`,'_blank');
-clearCart();
+setTimeout(()=>{
+window.location.href=`https://wa.me/${OWNER_WHATSAPP}?text=${generateMsg(res.razorpay_payment_id)}`;
+},500);
 }
 };
-
 new Razorpay(options).open();
 }
 
 renderMenu();
-</script></body>
+</script>
+</body>
 </html>
