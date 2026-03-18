@@ -27,7 +27,10 @@ button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-we
 
 </head>
 <body>
-<header>#7 Restaurant</header><div class="layout">
+<header style="display:flex;justify-content:space-between;align-items:center;padding:15px 20px">
+<span>#7 Restaurant</span>
+<button id="topCartBtn" onclick="toggleCart()" style="background:#ffd700;color:#000;padding:6px 12px;border-radius:20px;font-weight:600">Cart 🛒</button>
+</header><div class="layout">
 <div class="menu-section" id="menu"></div>
 </div><div id="cartToggle" onclick="toggleCart()">Cart 🛒</div><div id="cart">
 <div class="cart-header">
