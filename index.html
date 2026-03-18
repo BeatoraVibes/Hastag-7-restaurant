@@ -4,192 +4,166 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>#7 Restaurant</title>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
 <style>
-body{margin:0;font-family:Poppins;background:#0f0f0f;color:#fff}
-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#111}
-.menu-section{width:100%;padding:15px}
-.category{margin-bottom:20px}
-.category h2{color:#ffd700;border-left:5px solid #ffd700;padding-left:10px}
+body{margin:0;font-family:sans-serif;background:#000;color:#fff}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px;background:#111}
+.menu{padding:15px}
+.section{margin-bottom:25px}
+.section h2{color:#ffd700}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.item{display:flex;justify-content:space-between;align-items:center;background:#1c1c1c;padding:10px;border-radius:10px}
-button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer}
-.qty-box{display:flex;gap:5px;align-items:center}
+.card{background:#222;padding:10px;border-radius:10px;display:flex;justify-content:space-between;align-items:center}
+.qty{display:flex;gap:5px}
+.qty button{background:#ffd700;border:none;padding:5px 10px;border-radius:5px}
 
-#cart{
-position:fixed;
-right:-100%;
-top:0;
-width:85%;
-height:100%;
-background:#181818;
-padding:20px;
-transition:.3s;
-overflow:auto;
-z-index:1000;
-}
-#cart.active{right:0}
+.cart{position:fixed;right:0;top:0;width:300px;height:100%;background:#111;padding:15px;display:none;overflow:auto}
 
-.cart-header{display:flex;justify-content:space-between}
-.close-btn{background:#ff4d4d;color:#fff}
-.cart-item{display:flex;justify-content:space-between;margin:8px 0}
-
-@media(min-width:768px){
-.menu-section{width:60%}
-#cart{width:40%;right:0}
+@media(max-width:768px){
+.grid{grid-template-columns:1fr}
 }
 </style>
 </head>
+
 <body>
+
 <header>
-<span>#7 Restaurant</span>
+<h2>#7 Restaurant</h2>
+<div>
+<button onclick="login()">Login</button>
 <button onclick="toggleCart()">Cart 🛒</button>
+</div>
 </header>
 
-<div class="menu-section" id="menu"></div>
+<div class="menu" id="menu"></div>
 
-<div id="cart">
-<div class="cart-header">
-<h2>Your Cart</h2>
-<button class="close-btn" onclick="closeCart()">Close ✖</button>
-</div>
+<div class="cart" id="cartBox">
+<h3>Your Cart</h3>
 <div id="cartItems"></div>
-<h3>Total: ₹<span id="total">0</span></h3>
-
-<button onclick="openForm()">Pay</button>
-<button class="close-btn" onclick="clearCart()">Cancel</button>
-
-<div id="orderForm" style="display:none;margin-top:10px">
-<input id="custName" placeholder="Name" style="width:100%;margin-bottom:6px">
-<input id="custPhone" placeholder="Phone" style="width:100%;margin-bottom:6px">
-<textarea id="custAddress" placeholder="Address" style="width:100%;margin-bottom:6px"></textarea>
-<button onclick="payNow()">Confirm & Pay</button>
+<p id="total">Total: ₹0</p>
+<button onclick="payNow()">Pay</button>
+<button onclick="clearCart()">Cancel</button>
+<button onclick="toggleCart()">Close</button>
 </div>
-</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
-const OWNER_WHATSAPP="919021268038";
+const firebaseConfig = {
+  apiKey: "AIzaSyBZa8qNux45ko8RDq-b6bmji-rBuugOTkM",
+  authDomain: "sample-restaurant-websit-f6985.firebaseapp.com",
+  projectId: "sample-restaurant-websit-f6985",
+};
 
-const menu=[
-{cat:"Breakfast",items:[["Bread Butter",20],["Toast Bread Butter",30],["Bun Maska",25],["Cheese Bread Butter",45]]},
-{cat:"Dessert",items:[["Chocolate Brownie",99],["Sizzling Brownie",139],["Vanilla Ice Cream",30]]},
-{cat:"Tea",items:[["Elaichi Chai",12],["Lemon Tea",20],["Black Tea",15]]},
-{cat:"Coffee",items:[["Hot Coffee",20],["Black Coffee",15],["Hot Chocolate Coffee",45],["Dairy Milk Hot Chocolate",40],["Hot Chocolate",35],["Ukala",30]]},
-{cat:"Pasta",items:[["Red Sauce Pasta",89],["White Sauce Pasta",99]]},
-{cat:"Fries",items:[["Salty Fries",60],["Peri Peri Fries",75]]},
-{cat:"Sandwich",items:[["Veg Normal Sandwich",50],["Veg Cheese Sandwich",60],["Masala Cheese Sandwich",70],["7 Special Veg Club",140]]},
-{cat:"Momos",items:[["Veg Momos",70],["Chicken Momos",80]]},
-{cat:"Milkshake",items:[["Vanilla Shake",60],["Cold Coffee",70],["Mango Shake",75],["Strawberry Shake",75],["Chocolate Shake",80],["Oreo Shake",95],["Kitkat Shake",95]]}
-];
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let user=null;
+auth.onAuthStateChanged(u=>user=u);
+
+function login(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+}
+
+const menuData={
+  "Breakfast":[
+    {n:"Bread Butter",p:20},
+    {n:"Toast Bread Butter",p:30},
+    {n:"Bun Maska",p:25},
+    {n:"Cheese Bread Butter",p:45}
+  ],
+  "Dessert":[
+    {n:"Chocolate Brownie",p:99},
+    {n:"Sizzling Brownie",p:139},
+    {n:"Vanilla Ice Cream",p:30}
+  ],
+  "Tea":[
+    {n:"Elaichi Chai",p:12},
+    {n:"Lemon Tea",p:20},
+    {n:"Black Tea",p:15}
+  ]
+};
 
 let cart={};
 
-function renderMenu(){
-let m=document.getElementById("menu");
-menu.forEach(c=>{
-let div=document.createElement("div");
-div.className="category";
-div.innerHTML=`<h2>${c.cat}</h2><div class='grid'></div>`;
-let grid=div.querySelector(".grid");
+function render(){
+  const m=document.getElementById("menu");
+  m.innerHTML="";
 
-c.items.forEach(i=>{
-let id=i[0].replace(/[^a-zA-Z0-9]/g,"");
-let el=document.createElement("div");
-el.className="item";
-el.innerHTML=`<span>${i[0]} - ₹${i[1]}</span>
-<div class="qty-box">
-<button onclick="decrease('${id}','${i[0]}',${i[1]})">-</button>
-<span id="qty-${id}">0</span>
-<button onclick="increase('${id}','${i[0]}',${i[1]})">+</button>
-</div>`;
-grid.appendChild(el);
-});
+  for(let cat in menuData){
+    m.innerHTML+=`<div class="section"><h2>${cat}</h2><div class="grid" id="${cat}"></div></div>`;
 
-m.appendChild(div);
-});
+    const g=document.getElementById(cat);
+
+    menuData[cat].forEach(item=>{
+      g.innerHTML+=`
+      <div class="card">
+        <div>${item.n} - ₹${item.p}</div>
+        <div class="qty">
+          <button onclick="change('${item.n}',${item.p},-1)">-</button>
+          <span id="q-${item.n}">0</span>
+          <button onclick="change('${item.n}',${item.p},1)">+</button>
+        </div>
+      </div>`;
+    });
+  }
 }
 
-function increase(id,name,price){
-if(!cart[id]) cart[id]={name,price,qty:0};
-cart[id].qty++;
-document.getElementById(`qty-${id}`).innerText=cart[id].qty;
-updateCart();
-}
-
-function decrease(id,name,price){
-if(cart[id] && cart[id].qty>0){
-cart[id].qty--;
-document.getElementById(`qty-${id}`).innerText=cart[id].qty;
-if(cart[id].qty===0) delete cart[id];
-updateCart();
-}
+function change(name,price,val){
+  if(!cart[name]) cart[name]={qty:0,price};
+  cart[name].qty+=val;
+  if(cart[name].qty<=0) delete cart[name];
+  document.getElementById(`q-${name}`).innerText=cart[name]?cart[name].qty:0;
+  updateCart();
 }
 
 function updateCart(){
-let c=document.getElementById("cartItems");
-c.innerHTML="";
-let total=0;
-Object.entries(cart).forEach(([id,item])=>{
-let amount=item.qty*item.price;
-total+=amount;
-let div=document.createElement("div");
-div.className="cart-item";
-div.innerHTML=`${item.name} x${item.qty} ₹${amount} <button onclick="removeItem('${id}')">❌</button>`;
-c.appendChild(div);
-});
-document.getElementById("total").innerText=total;
+  const c=document.getElementById("cartItems");
+  c.innerHTML="";
+  let total=0;
+
+  for(let i in cart){
+    total+=cart[i].qty*cart[i].price;
+    c.innerHTML+=`<p>${i} x${cart[i].qty}</p>`;
+  }
+
+  document.getElementById("total").innerText="Total: ₹"+total;
 }
 
-function removeItem(id){
-delete cart[id];
-document.getElementById(`qty-${id}`).innerText=0;
-updateCart();
+function toggleCart(){
+  const c=document.getElementById("cartBox");
+  c.style.display=c.style.display==="block"?"none":"block";
 }
 
-function toggleCart(){document.getElementById("cart").classList.toggle("active");}
-function closeCart(){document.getElementById("cart").classList.remove("active");}
-
-function clearCart(){cart={};document.querySelectorAll('[id^="qty-"]').forEach(el=>el.innerText='0');updateCart();closeCart();}
-
-function openForm(){if(Object.keys(cart).length===0){alert("Cart empty");return;}document.getElementById("orderForm").style.display="block";}
-
-function generateMsg(id){
-let name=document.getElementById("custName").value;
-let phone=document.getElementById("custPhone").value;
-let address=document.getElementById("custAddress").value;
-let msg=`Order:%0AName:${name}%0APhone:${phone}%0AAddress:${address}%0A`;
-Object.values(cart).forEach(i=>{msg+=`${i.name} x${i.qty}%0A`});
-msg+=`Total:₹${document.getElementById("total").innerText}%0AID:${id}`;
-return msg;
+function clearCart(){
+  cart={};
+  render();
+  updateCart();
 }
 
 function payNow(){
-let name=document.getElementById("custName").value.trim();
-let phone=document.getElementById("custPhone").value.trim();
-let address=document.getElementById("custAddress").value.trim();
+  if(!user){alert("Login first");return;}
 
-if(name===""){alert("Enter name");return;}
-if(!/^[0-9]{10}$/.test(phone)){alert("Invalid phone");return;}
-if(address.length<5){alert("Enter address");return;}
+  let total=0;
+  for(let i in cart) total+=cart[i].qty*cart[i].price;
 
-let total=document.getElementById("total").innerText;
-
-var options={
-key:"rzp_test_SSfbjt7z6btSQf",
-amount:total*100,
-currency:"INR",
-handler:function(res){
-alert("Payment Success");
-setTimeout(()=>{
-window.location.href=`https://wa.me/${OWNER_WHATSAPP}?text=${generateMsg(res.razorpay_payment_id)}`;
-},500);
-}
-};
-new Razorpay(options).open();
+  db.collection("orders").add({
+    user:user.email,
+    cart:cart,
+    total:total,
+    time:new Date()
+  }).then(()=>{
+    alert("Order Saved!");
+    clearCart();
+  });
 }
 
-renderMenu();
+render();
 </script>
+
 </body>
 </html>
