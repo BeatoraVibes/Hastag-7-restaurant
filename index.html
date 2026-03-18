@@ -6,7 +6,7 @@
 <title>#7 Restaurant</title>
 
 <style>
-body{margin:0;font-family:sans-serif;color:#fff;background:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836') no-repeat center/cover}
+body{margin:0;font-family:sans-serif;color:#fff;background:url('https://images.unsplash.com/photo-1541592106381-b31e9677c0e5') center/cover fixed}
 header{display:flex;justify-content:space-between;align-items:center;padding:15px;background:rgba(0,0,0,0.7)}
 .menu{padding:15px;background:rgba(0,0,0,0.6)}
 .section{margin-bottom:25px}
@@ -40,19 +40,19 @@ header{display:flex;justify-content:space-between;align-items:center;padding:15p
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
-const OWNER_WHATSAPP="91XXXXXXXXXX";
+const OWNER_WHATSAPP="919021268038";
 
 const firebaseConfig={
  apiKey:"AIzaSyBZa8qNux45ko8RDq-b6bmji-rBuugOTkM",
  authDomain:"sample-restaurant-websit-f6985.firebaseapp.com",
  projectId:"sample-restaurant-websit-f6985",
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
@@ -78,8 +78,33 @@ function logout(){auth.signOut();}
 auth.getRedirectResult();
 
 const menuData={
- "Breakfast":[{n:"Bread Butter",p:20},{n:"Bun Maska",p:25}],
- "Tea":[{n:"Elaichi Chai",p:12},{n:"Black Tea",p:15}]
+ "Breakfast":[
+  {n:"Bread Butter",p:20},{n:"Toast Bread Butter",p:30},{n:"Bun Maska",p:25},{n:"Cheese Bread Butter",p:45}
+ ],
+ "Dessert":[
+  {n:"Chocolate Brownie",p:99},{n:"Sizzling Brownie",p:139},{n:"Vanilla Ice Cream",p:30}
+ ],
+ "Tea":[
+  {n:"Elaichi Chai",p:12},{n:"Lemon Tea",p:20},{n:"Black Tea",p:15}
+ ],
+ "Coffee":[
+  {n:"Hot Coffee",p:20},{n:"Black Coffee",p:15},{n:"Hot Chocolate Coffee",p:45},{n:"Ukala",p:30}
+ ],
+ "Pasta":[
+  {n:"Red Sauce Pasta",p:89},{n:"White Sauce Pasta",p:99}
+ ],
+ "Fries":[
+  {n:"Salty Fries",p:60},{n:"Peri Peri Fries",p:75}
+ ],
+ "Sandwich":[
+  {n:"Veg Sandwich",p:50},{n:"Veg Cheese Sandwich",p:60},{n:"Masala Sandwich",p:70}
+ ],
+ "Momos":[
+  {n:"Veg Momos",p:70},{n:"Chicken Momos",p:80}
+ ],
+ "Milkshake":[
+  {n:"Vanilla Shake",p:60},{n:"Mango Shake",p:75},{n:"Oreo Shake",p:95}
+ ]
 };
 
 let cart={};
@@ -130,7 +155,7 @@ function payNow(){
  let total=0;for(let i in cart) total+=cart[i].qty*cart[i].price;
 
  const options={
-  key:"YOUR_RAZORPAY_KEY",
+  key:"rzp_test_SSfbjt7z6btSQf",
   amount:total*100,
   currency:"INR",
   name:"#7 Restaurant",
