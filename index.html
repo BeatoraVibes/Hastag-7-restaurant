@@ -7,70 +7,188 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 <style>
 body{margin:0;font-family:Poppins;background:#0f0f0f;color:#fff}
-header{padding:20px;text-align:center;font-size:28px;font-weight:700;background:linear-gradient(90deg,#111,#222)}
-.layout{display:flex}
-.menu-section{width:60%;padding:20px}
-.category{margin-bottom:25px}
-.category h2{color:#ffd700;border-left:5px solid #ffd700;padding-left:10px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.item{display:flex;justify-content:space-between;align-items:center;background:#1c1c1c;padding:10px;border-radius:10px}
-button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer}
-.qty-box{display:flex;gap:5px;align-items:center}
-.qty-box button{padding:4px 8px}
-#cart{position:fixed;right:0;top:0;width:40%;height:100%;background:#181818;padding:20px;overflow:auto}
-.cart-item{display:flex;justify-content:space-between;margin:8px 0}
-.cart-actions{margin-top:15px;display:flex;gap:10px}
-.cancel-btn{background:#ff4d4d;color:#fff}
-</style>
+header{padding:15px;text-align:center;font-size:22px;font-weight:700;background:linear-gradient(90deg,#111,#222)}.layout{display:flex} .menu-section{width:100%;padding:15px}
+
+.category{margin-bottom:20px} .category h2{color:#ffd700;border-left:5px solid #ffd700;padding-left:10px} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px} .item{display:flex;justify-content:space-between;align-items:center;background:#1c1c1c;padding:10px;border-radius:10px}
+
+button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer} .qty-box{display:flex;gap:5px;align-items:center}
+
+/* CART OVERLAY */ #cart{ position:fixed; right:-100%; top:0; width:85%; height:100%; background:#181818; padding:20px; transition:.3s; overflow:auto; z-index:1000; } #cart.active{right:0}
+
+.cart-header{display:flex;justify-content:space-between;align-items:center} .close-btn{background:#ff4d4d;color:#fff;padding:5px 10px}
+
+.cart-item{display:flex;justify-content:space-between;margin:8px 0} .cart-actions{margin-top:15px;display:flex;gap:10px}
+
+#cartToggle{ position:fixed; bottom:20px; right:20px; background:#ffd700; color:#000; padding:12px 16px; border-radius:50px; font-weight:bold; cursor:pointer; z-index:999; }
+
+@media(min-width:768px){ .menu-section{width:60%} #cart{width:40%;right:0} #cartToggle{display:none} } </style>
+
 </head>
 <body>
-<header>#7 Restaurant</header>
-<div class="layout">
+<header>#7 Restaurant</header><div class="layout">
 <div class="menu-section" id="menu"></div>
-<div id="cart">
+</div><div id="cartToggle" onclick="toggleCart()">Cart 🛒</div><div id="cart">
+<div class="cart-header">
 <h2>Your Cart</h2>
-<div id="cartItems"></div>
-<h3>Total: ₹<span id="total">0</span></h3>
-<div class="cart-actions">
-<button onclick="payNow()">Pay</button>
-<button class="cancel-btn" onclick="clearCart()">Cancel</button>
+<button class="close-btn" onclick="closeCart()">Close ✖</button>
+</div><div id="cartItems"></div>
+<h3>Total: ₹<span id="total">0</span></h3><div class="cart-actions">
+<button onclick="openForm()">Pay</button>
+<button class="close-btn" onclick="clearCart()">Cancel</button>
+</div><!-- CUSTOMER FORM --><div id="orderForm" style="display:none;margin-top:15px">
+<input id="custName" placeholder="Your Name" style="width:100%;margin-bottom:8px;padding:8px;border-radius:5px;border:none">
+<input id="custPhone" placeholder="Phone Number" style="width:100%;margin-bottom:8px;padding:8px;border-radius:5px;border:none">
+<textarea id="custAddress" placeholder="Address" style="width:100%;margin-bottom:8px;padding:8px;border-radius:5px;border:none"></textarea>
+<button onclick="payNow()" style="width:100%">Confirm & Pay</button>
 </div>
-</div>
-</div>
-<script>
-const OWNER_WHATSAPP = "91XXXXXXXXXX";const menu=[ {cat:"Breakfast",items:[["Bread Butter",20],["Toast Bread Butter",30],["Bun Maska",25],["Cheese Bread Butter",45]]}, {cat:"Dessert",items:[["Chocolate Brownie",99],["Sizzling Brownie",139],["Vanilla Ice Cream",30]]}, {cat:"Tea",items:[["Elaichi Chai",12],["Lemon Tea",20],["Black Tea",15]]}, {cat:"Coffee",items:[["Hot Coffee",20],["Black Coffee",15],["Hot Chocolate Coffee",45],["Dairy Milk Hot Chocolate",40],["Hot Chocolate",35],["Ukala",30]]}, {cat:"Pasta",items:[["Red Sauce Pasta",89],["White Sauce Pasta",99]]}, {cat:"Fries",items:[["Salty Fries",60],["Peri Peri Fries",75]]}, {cat:"Sandwich",items:[["Veg Normal Sandwich",50],["Veg Cheese Sandwich",60],["Masala Cheese Sandwich",70],["7 Special Veg Club",140]]}, {cat:"Momos",items:[["Veg Momos",70],["Chicken Momos",80]]}, {cat:"Milkshake",items:[["Vanilla Shake",60],["Cold Coffee",70],["Mango Shake",75],["Strawberry Shake",75],["Chocolate Shake",80],["Oreo Shake",95],["Kitkat Shake",95]]} ];
+</div><script>
+const OWNER_WHATSAPP="91XXXXXXXXXX";
+
+const menu=[
+{cat:"Breakfast",items:[["Bread Butter",20],["Toast Bread Butter",30],["Bun Maska",25],["Cheese Bread Butter",45]]},
+{cat:"Dessert",items:[["Chocolate Brownie",99],["Sizzling Brownie",139],["Vanilla Ice Cream",30]]},
+{cat:"Tea",items:[["Elaichi Chai",12],["Lemon Tea",20],["Black Tea",15]]},
+{cat:"Coffee",items:[["Hot Coffee",20],["Black Coffee",15],["Hot Chocolate Coffee",45],["Dairy Milk Hot Chocolate",40],["Hot Chocolate",35],["Ukala",30]]},
+{cat:"Pasta",items:[["Red Sauce Pasta",89],["White Sauce Pasta",99]]},
+{cat:"Fries",items:[["Salty Fries",60],["Peri Peri Fries",75]]},
+{cat:"Sandwich",items:[["Veg Normal Sandwich",50],["Veg Cheese Sandwich",60],["Masala Cheese Sandwich",70],["7 Special Veg Club",140]]},
+{cat:"Momos",items:[["Veg Momos",70],["Chicken Momos",80]]},
+{cat:"Milkshake",items:[["Vanilla Shake",60],["Cold Coffee",70],["Mango Shake",75],["Strawberry Shake",75],["Chocolate Shake",80],["Oreo Shake",95],["Kitkat Shake",95]]}
+];
 
 let cart={};
 
-function renderMenu(){ let m=document.getElementById("menu"); menu.forEach(c=>{ let div=document.createElement("div"); div.className="category"; div.innerHTML=<h2>${c.cat}</h2><div class='grid'></div>; let grid=div.querySelector(".grid");
+function renderMenu(){
+let m=document.getElementById("menu");
+menu.forEach(c=>{
+let div=document.createElement("div");
+div.className="category";
+div.innerHTML=`<h2>${c.cat}</h2><div class='grid'></div>`;
+let grid=div.querySelector(".grid");
 
-c.items.forEach(i=>{ let id=i[0].replace(/[^a-zA-Z0-9]/g,""); let el=document.createElement("div"); el.className="item"; el.innerHTML=`<span>${i[0]} - ₹${i[1]}</span>
-
+c.items.forEach(i=>{
+let id=i[0].replace(/[^a-zA-Z0-9]/g,"");
+let el=document.createElement("div");
+el.className="item";
+el.innerHTML=`<span>${i[0]} - ₹${i[1]}</span>
 <div class="qty-box">
 <button onclick="decrease('${id}','${i[0]}',${i[1]})">-</button>
 <span id="qty-${id}">0</span>
 <button onclick="increase('${id}','${i[0]}',${i[1]})">+</button>
 </div>`;
 grid.appendChild(el);
-});m.appendChild(div); }); }
+});
 
-function increase(id,name,price){ if(!cart[id]) cart[id]={name,price,qty:0}; cart[id].qty++; document.getElementById(qty-${id}).innerText=cart[id].qty; updateCart(); }
+m.appendChild(div);
+});
+}
 
-function decrease(id,name,price){ if(cart[id] && cart[id].qty>0){ cart[id].qty--; document.getElementById(qty-${id}).innerText=cart[id].qty; if(cart[id].qty===0) delete cart[id]; updateCart(); } }
+function increase(id,name,price){
+if(!cart[id]) cart[id]={name,price,qty:0};
+cart[id].qty++;
+document.getElementById(`qty-${id}`).innerText=cart[id].qty;
+updateCart();
+}
 
-function updateCart(){ let c=document.getElementById("cartItems"); c.innerHTML=""; let total=0; Object.values(cart).forEach(item=>{ let amount=item.qty*item.price; total+=amount; let div=document.createElement("div"); div.className="cart-item"; div.innerHTML=${item.name} x${item.qty} <span>₹${amount}</span>; c.appendChild(div); }); document.getElementById("total").innerText=total; }
+function decrease(id,name,price){
+if(cart[id] && cart[id].qty>0){
+cart[id].qty--;
+document.getElementById(`qty-${id}`).innerText=cart[id].qty;
+if(cart[id].qty===0) delete cart[id];
+updateCart();
+}
+}
 
-function clearCart(){ cart={}; document.querySelectorAll('[id^="qty-"]').forEach(el=>el.innerText='0'); updateCart(); alert("Cart cleared"); }
+function updateCart(){
+let c=document.getElementById("cartItems");
+c.innerHTML="";
+let total=0;
+Object.values(cart).forEach(item=>{
+let amount=item.qty*item.price;
+total+=amount;
+let div=document.createElement("div");
+div.className="cart-item";
+div.innerHTML=`${item.name} x${item.qty} <span>₹${amount}</span>`;
+c.appendChild(div);
+});
+document.getElementById("total").innerText=total;
+}
 
-function generateMsg(paymentId){ let msg="New Order:%0A"; Object.values(cart).forEach(i=>{ msg+=${i.name} x${i.qty} = ₹${i.qty*i.price}%0A; }); msg+=Total: ₹${document.getElementById("total").innerText}%0A; msg+=Payment ID: ${paymentId}; return msg; }
+function toggleCart(){
+document.getElementById("cart").classList.toggle("active");
+}
 
-function payNow(){ let total=document.getElementById("total").innerText; if(total==0){alert("Cart empty");return;}
+function closeCart(){
+document.getElementById("cart").classList.remove("active");
+}
 
-var options={ key:"YOUR_RAZORPAY_KEY", amount:total*100, currency:"INR", name:"#7 Restaurant", handler:function(res){ alert("Payment Success"); let url=https://wa.me/${OWNER_WHATSAPP}?text=${generateMsg(res.razorpay_payment_id)}; window.open(url,'_blank'); clearCart(); } };
+function clearCart(){
+cart={};
+document.querySelectorAll('[id^="qty-"]').forEach(el=>el.innerText='0');
+updateCart();
+closeCart();
+}
 
-new Razorpay(options).open(); }
+function generateMsg(paymentId){
+let name=document.getElementById("custName").value;
+let phone=document.getElementById("custPhone").value;
+let address=document.getElementById("custAddress").value;
 
-renderMenu(); </script>
+let msg="New Order:%0A";
+msg+=`Name: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0A`;
 
-</body>
+Object.values(cart).forEach(i=>{
+msg+=`${i.name} x${i.qty} = ₹${i.qty*i.price}%0A`;
+});
+msg+=`Total: ₹${document.getElementById("total").innerText}%0A`;
+msg+=`Payment ID: ${paymentId}`;
+return msg;
+}
+
+function openForm(){
+if(Object.keys(cart).length===0){alert("Cart empty");return;}
+document.getElementById("orderForm").style.display="block";
+}
+
+function payNow(){
+let name=document.getElementById("custName").value.trim();
+let phone=document.getElementById("custPhone").value.trim();
+let address=document.getElementById("custAddress").value.trim();
+
+// VALIDATION
+if(name===""){
+alert("Please enter your name");
+return;
+}
+
+if(!/^[0-9]{10}$/.test(phone)){
+alert("Enter valid 10-digit phone number");
+return;
+}
+
+if(address.length<5){
+alert("Please enter full address");
+return;
+}
+
+let total=document.getElementById("total").innerText;
+if(total==0){alert("Cart empty");return;}
+
+var options={
+key:"YOUR_RAZORPAY_KEY",
+amount:total*100,
+currency:"INR",
+name:"#7 Restaurant",
+handler:function(res){
+alert("Payment Success");
+window.open(`https://wa.me/${OWNER_WHATSAPP}?text=${generateMsg(res.razorpay_payment_id)}`,'_blank');
+clearCart();
+}
+};
+
+new Razorpay(options).open();
+}
+
+renderMenu();
+</script></body>
 </html>
