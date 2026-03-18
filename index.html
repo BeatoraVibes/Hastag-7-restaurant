@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +19,8 @@ button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-we
 .qty-box button{padding:4px 8px}
 #cart{position:fixed;right:0;top:0;width:40%;height:100%;background:#181818;padding:20px;overflow:auto}
 .cart-item{display:flex;justify-content:space-between;margin:8px 0}
+.cart-actions{margin-top:15px;display:flex;gap:10px}
+.cancel-btn{background:#ff4d4d;color:#fff}
 </style>
 </head>
 <body>
@@ -30,119 +31,46 @@ button{background:#ffd700;border:none;padding:6px 10px;border-radius:6px;font-we
 <h2>Your Cart</h2>
 <div id="cartItems"></div>
 <h3>Total: ₹<span id="total">0</span></h3>
-<button onclick="payNow()">Pay with Razorpay</button>
+<div class="cart-actions">
+<button onclick="payNow()">Pay</button>
+<button class="cancel-btn" onclick="clearCart()">Cancel</button>
+</div>
 </div>
 </div>
 <script>
-const OWNER_WHATSAPP = "919021268038"; // replace with owner's number
-
-const menu=[
-{cat:"Breakfast",items:[["Bread Butter",20],["Toast Bread Butter",30],["Bun Maska",25],["Cheese Bread Butter",45]]},
-{cat:"Dessert",items:[["Chocolate Brownie",99],["Sizzling Brownie",139],["Vanilla Ice Cream",30]]},
-{cat:"Tea",items:[["Elaichi Chai",12],["Lemon Tea",20],["Black Tea",15]]},
-{cat:"Coffee",items:[["Hot Coffee",20],["Black Coffee",15],["Hot Chocolate Coffee",45],["Dairy Milk Hot Chocolate",40],["Hot Chocolate",35],["Ukala",30]]},
-{cat:"Pasta",items:[["Red Sauce Pasta",89],["White Sauce Pasta",99]]},
-{cat:"Fries",items:[["Salty Fries",60],["Peri Peri Fries",75]]},
-{cat:"Sandwich",items:[["Veg Normal Sandwich",50],["Veg Cheese Sandwich",60],["Masala Cheese Sandwich",70],["7 Special Veg Club",140]]},
-{cat:"Momos",items:[["Veg Momos",70],["Chicken Momos",80]]},
-{cat:"Milkshake",items:[["Vanilla Shake",60],["Cold Coffee",70],["Mango Shake",75],["Strawberry Shake",75],["Chocolate Shake",80],["Oreo Shake",95],["Kitkat Shake",95]]}
-];
+const OWNER_WHATSAPP = "91XXXXXXXXXX";const menu=[ {cat:"Breakfast",items:[["Bread Butter",20],["Toast Bread Butter",30],["Bun Maska",25],["Cheese Bread Butter",45]]}, {cat:"Dessert",items:[["Chocolate Brownie",99],["Sizzling Brownie",139],["Vanilla Ice Cream",30]]}, {cat:"Tea",items:[["Elaichi Chai",12],["Lemon Tea",20],["Black Tea",15]]}, {cat:"Coffee",items:[["Hot Coffee",20],["Black Coffee",15],["Hot Chocolate Coffee",45],["Dairy Milk Hot Chocolate",40],["Hot Chocolate",35],["Ukala",30]]}, {cat:"Pasta",items:[["Red Sauce Pasta",89],["White Sauce Pasta",99]]}, {cat:"Fries",items:[["Salty Fries",60],["Peri Peri Fries",75]]}, {cat:"Sandwich",items:[["Veg Normal Sandwich",50],["Veg Cheese Sandwich",60],["Masala Cheese Sandwich",70],["7 Special Veg Club",140]]}, {cat:"Momos",items:[["Veg Momos",70],["Chicken Momos",80]]}, {cat:"Milkshake",items:[["Vanilla Shake",60],["Cold Coffee",70],["Mango Shake",75],["Strawberry Shake",75],["Chocolate Shake",80],["Oreo Shake",95],["Kitkat Shake",95]]} ];
 
 let cart={};
 
-function renderMenu(){
-let m=document.getElementById("menu");
-menu.forEach(c=>{
-let div=document.createElement("div");
-div.className="category";
-div.innerHTML=`<h2>${c.cat}</h2><div class='grid'></div>`;
-let grid=div.querySelector(".grid");
+function renderMenu(){ let m=document.getElementById("menu"); menu.forEach(c=>{ let div=document.createElement("div"); div.className="category"; div.innerHTML=<h2>${c.cat}</h2><div class='grid'></div>; let grid=div.querySelector(".grid");
 
-c.items.forEach(i=>{
-let safeId = i[0].replace(/[^a-zA-Z0-9]/g,"");
-let el=document.createElement("div");
-el.className="item";
-el.innerHTML=`<span>${i[0]} - ₹${i[1]}</span>
+c.items.forEach(i=>{ let id=i[0].replace(/[^a-zA-Z0-9]/g,""); let el=document.createElement("div"); el.className="item"; el.innerHTML=`<span>${i[0]} - ₹${i[1]}</span>
+
 <div class="qty-box">
-<button onclick="decrease('${safeId}','${i[0]}',${i[1]})">-</button>
-<span id="qty-${safeId}">0</span>
-<button onclick="increase('${safeId}','${i[0]}',${i[1]})">+</button>
+<button onclick="decrease('${id}','${i[0]}',${i[1]})">-</button>
+<span id="qty-${id}">0</span>
+<button onclick="increase('${id}','${i[0]}',${i[1]})">+</button>
 </div>`;
 grid.appendChild(el);
-});
+});m.appendChild(div); }); }
 
-m.appendChild(div);
-});
-}
+function increase(id,name,price){ if(!cart[id]) cart[id]={name,price,qty:0}; cart[id].qty++; document.getElementById(qty-${id}).innerText=cart[id].qty; updateCart(); }
 
-function increase(id,name,price){
-if(!cart[id]) cart[id]={name,price,qty:0};
-cart[id].qty++;
-document.getElementById(`qty-${id}`).innerText=cart[id].qty;
-updateCart();
-}
+function decrease(id,name,price){ if(cart[id] && cart[id].qty>0){ cart[id].qty--; document.getElementById(qty-${id}).innerText=cart[id].qty; if(cart[id].qty===0) delete cart[id]; updateCart(); } }
 
-function decrease(id,name,price){
-if(cart[id] && cart[id].qty>0){
-cart[id].qty--;
-document.getElementById(`qty-${id}`).innerText=cart[id].qty;
-if(cart[id].qty===0) delete cart[id];
-updateCart();
-}
-}
+function updateCart(){ let c=document.getElementById("cartItems"); c.innerHTML=""; let total=0; Object.values(cart).forEach(item=>{ let amount=item.qty*item.price; total+=amount; let div=document.createElement("div"); div.className="cart-item"; div.innerHTML=${item.name} x${item.qty} <span>₹${amount}</span>; c.appendChild(div); }); document.getElementById("total").innerText=total; }
 
-function updateCart(){
-let c=document.getElementById("cartItems");
-c.innerHTML="";
-let total=0;
-Object.values(cart).forEach(item=>{
-let amount=item.qty*item.price;
-total+=amount;
-let div=document.createElement("div");
-div.className="cart-item";
-div.innerHTML=`${item.name} x${item.qty} <span>₹${amount}</span>`;
-c.appendChild(div);
-});
-document.getElementById("total").innerText=total;
-}
+function clearCart(){ cart={}; document.querySelectorAll('[id^="qty-"]').forEach(el=>el.innerText='0'); updateCart(); alert("Cart cleared"); }
 
-function generateWhatsAppMessage(paymentId){
-let message = "New Order Received!%0A%0A";
-Object.values(cart).forEach(item=>{
-message += `${item.name} x${item.qty} = ₹${item.qty * item.price}%0A`;
-});
-message += `%0ATotal: ₹${document.getElementById("total").innerText}%0A`;
-message += `Payment ID: ${paymentId}`;
-return message;
-}
+function generateMsg(paymentId){ let msg="New Order:%0A"; Object.values(cart).forEach(i=>{ msg+=${i.name} x${i.qty} = ₹${i.qty*i.price}%0A; }); msg+=Total: ₹${document.getElementById("total").innerText}%0A; msg+=Payment ID: ${paymentId}; return msg; }
 
-function sendWhatsApp(paymentId){
-let msg = generateWhatsAppMessage(paymentId);
-let url = `https://wa.me/${OWNER_WHATSAPP}?text=${msg}`;
-window.open(url, '_blank');
-}
+function payNow(){ let total=document.getElementById("total").innerText; if(total==0){alert("Cart empty");return;}
 
-function payNow(){
-let total=document.getElementById("total").innerText;
-if(total==0){alert("Cart is empty");return;}
+var options={ key:"YOUR_RAZORPAY_KEY", amount:total*100, currency:"INR", name:"#7 Restaurant", handler:function(res){ alert("Payment Success"); let url=https://wa.me/${OWNER_WHATSAPP}?text=${generateMsg(res.razorpay_payment_id)}; window.open(url,'_blank'); clearCart(); } };
 
-var options = {
-    "key": "rzp_live_SSbW5Y5KRZUQsa",
-    "amount": total*100,
-    "currency": "INR",
-    "name": "#7 Restaurant",
-    "description": "Order Payment",
-    "handler": function (response){
-        alert("Payment Successful!");
-        sendWhatsApp(response.razorpay_payment_id);
-    }
-};
+new Razorpay(options).open(); }
 
-var rzp1 = new Razorpay(options);
-rzp1.open();
-}
+renderMenu(); </script>
 
-renderMenu();
-</script>
 </body>
 </html>
